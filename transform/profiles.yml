@@ -1,0 +1,8 @@
+crypto_vs_bourse:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # Chemin relatif au dossier transform/, d'où dbt est lancé.
+      path: "{{ env_var('DUCKDB_PATH', '../data/market.duckdb') }}"
+      threads: 4

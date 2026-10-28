@@ -1,0 +1,70 @@
+version: 2
+
+models:
+  - name: dim_assets
+    description: Un actif par ligne, avec sa période d'historique et son facteur d'annualisation.
+    columns:
+      - name: symbol
+        data_tests:
+          - unique
+          - not_null
+      - name: periods_per_year
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [252, 365]
+                quote: false
+      - name: first_date
+        description: Vide si l'actif n'a encore aucune donnée.
+        data_tests:
+          - not_null
+
+  - name: fct_daily_returns
+    description: >
+      Rendements journaliers de chaque actif sur son propre calendrier.
+      Pour étudier un actif isolément.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [symbol, date]
+    columns:
+      - name: log_return
+        data_tests:
+          - not_null
+      - name: days_since_prev
+        description: Nombre de jours calendaires depuis la cotation précédente.
+
+  - name: fct_aligned_returns
+    description: >
+      Rendements de tous les actifs sur le calendrier de la bourse US.
+      Pour comparer des actifs entre eux (corrélations, portefeuilles).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [symbol, date]
+    columns:
+      - name: log_return
+        data_tests:
+          - not_null
+      - name: is_carried_forward
+        description: Vrai si l'actif n'a pas coté ce jour-là et que le dernier prix connu a été repris.
+      - name: staleness_days
+        description: Ancienneté en jours du prix utilisé (0 = prix du jour).
+
+  - name: fct_trending
+    description: >
+      Cryptomonnaies tendance sur CoinGecko, jour par jour, avec le nombre de jours
+      passés dans le classement et la série de jours consécutifs en cours.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [snapshot_date, coin_id]
+    columns:
+      - name: days_trending
+        description: Nombre de jours de collecte où la cryptomonnaie était en tendance, jusqu'à cette date.
+        data_tests:
+          - not_null
+      - name: streak_days
+        description: Jours de collecte consécutifs en tendance, jusqu'à cette date (1 = première apparition de la série).
+        data_tests:
+          - not_null

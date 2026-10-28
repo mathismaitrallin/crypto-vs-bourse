@@ -1,0 +1,70 @@
+name: Mise à jour des données
+
+# Chaque jour : collecte complète, transformation et tests dbt, puis publication
+# des tables finales (Parquet) sur la branche `data`, lue par le dashboard en ligne.
+# Si un test qualité échoue, rien n'est publié : le dashboard garde les données de la veille.
+
+on:
+  schedule:
+    - cron: "30 6 * * *"  # 6h30 UTC : après la clôture de New York et de la bougie crypto du jour
+  workflow_dispatch:       # lancement manuel depuis l'onglet Actions
+
+permissions:
+  contents: write          # nécessaire pour pousser sur la branche data
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Installation
+        run: pip install -r requirements.txt
+
+      - name: Récupération de l'historique des tendances
+        # CoinGecko ne donne que le classement du jour : l'historique des jours précédents
+        # vient de la publication de la veille. Au tout premier lancement, il n'existe pas encore.
+        run: |
+          mkdir -p data/history
+          if git fetch -q --depth=1 origin data 2>/dev/null \
+             && git show origin/data:raw_trending.parquet > data/history/raw_trending.parquet 2>/dev/null; then
+            echo "Historique récupéré"
+          else
+            rm -f data/history/raw_trending.parquet
+            echo "Pas encore d'historique : il démarre aujourd'hui"
+          fi
+
+      - name: Collecte (Binance, Yahoo Finance, CoinGecko)
+        run: python -m src.ingest --full-refresh
+
+      - name: Transformation et tests qualité (dbt)
+        working-directory: transform
+        run: dbt build
+
+      - name: Fraîcheur des sources
+        working-directory: transform
+        run: dbt source freshness
+
+      - name: Export Parquet
+        run: python -m src.export
+
+      - name: Publication sur la branche data
+        # Branche réécrite à chaque fois (un seul commit) : l'historique Git ne grossit pas.
+        working-directory: data/export
+        run: |
+          git init -q -b data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -q -m "Données du $(date -u +%Y-%m-%d)"
+          git push -q --force "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" data

@@ -1,0 +1,62 @@
+version: 2
+
+models:
+  - name: stg_assets
+    description: Référentiel des actifs, nettoyé.
+    columns:
+      - name: symbol
+        data_tests:
+          - unique
+          - not_null
+      - name: asset_class
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [crypto, action, obligation, matiere_premiere, monetaire]
+
+  - name: stg_prices
+    description: Prix journaliers, une ligne par actif et par jour de cotation propre à l'actif.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [symbol, date]
+    columns:
+      - name: symbol
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_assets')
+                field: symbol
+      - name: date
+        data_tests:
+          - not_null
+      - name: price
+        description: Prix de clôture ajusté.
+        data_tests:
+          - not_null
+
+  - name: stg_trending
+    description: Cryptomonnaies tendance sur CoinGecko, une ligne par jour de collecte et par cryptomonnaie.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [snapshot_date, coin_id]
+      - unique_combination:
+          arguments:
+            columns: [snapshot_date, position]
+    columns:
+      - name: snapshot_date
+        data_tests:
+          - not_null
+      - name: position
+        description: Place dans le classement du jour (1 = la plus recherchée).
+        data_tests:
+          - not_null
+      - name: coin_id
+        description: Identifiant CoinGecko, stable dans le temps (le symbole peut être partagé par plusieurs jetons).
+        data_tests:
+          - not_null
+      - name: change_24h
+        description: Variation du prix en dollars sur 24 h (0,05 = +5 %).
