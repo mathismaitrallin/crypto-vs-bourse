@@ -52,17 +52,6 @@ données du dashboard. Si un test échoue, rien n'est publié et le dashboard ga
 - **Simulations prudentes** : frais à chaque rééquilibrage, et résultat vérifié sur 70 périodes de 3 ans.
 - **Tests qualité** : pas de doublon, prix cohérents, aucun jour manquant, données récentes.
 
-## Lancer le projet en local
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python -m src.ingest                # collecte des données
-cd transform && dbt build && cd ..  # transformation et tests
-streamlit run app/streamlit_app.py  # dashboard
-```
-
 ## Organisation
 
 ```
