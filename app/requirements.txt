@@ -4,3 +4,7 @@ pandas==2.3.3
 plotly==7.1.0
 pyarrow==21.0.0
 streamlit==1.50.0
+
+# Assistant IA : modèle Gemini et base SQL en mémoire pour ses requêtes
+duckdb==1.4.5
+google-genai==2.34.0

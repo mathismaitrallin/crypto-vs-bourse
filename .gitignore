@@ -17,3 +17,6 @@ data/
 
 # Vidéo de démo : trop lourde pour le dépôt, elle est ajoutée au README directement sur GitHub
 *.mp4
+
+# Clés d'API : jamais dans le dépôt
+.streamlit/secrets.toml

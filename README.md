@@ -25,9 +25,16 @@ Le détail est dans les notebooks [`01_analyse`](notebooks/01_analyse.ipynb) et
 
 ## Le dashboard
 
-Une application Streamlit en cinq sections : vue d'ensemble, lien avec la bourse, risque et krachs,
-simulateur de portefeuille, et cryptomonnaies tendance du jour (CoinGecko).
+Une application Streamlit en six sections : vue d'ensemble, lien avec la bourse, risque et krachs,
+simulateur de portefeuille, cryptomonnaies tendance du jour (CoinGecko) et **assistant IA**.
 Elle existe en français et en anglais (`?lang=en` à la fin de l'adresse).
+
+**L'assistant IA** répond aux questions en langage naturel (*« Comment le Bitcoin a-t-il réagi au krach
+du COVID ? »*). Il ne calcule rien lui-même : le modèle (Gemini) choisit parmi quatre outils Python —
+requête SQL en lecture seule sur les tables du projet, simulation de portefeuille, liste des krachs,
+graphique — puis rédige la réponse à partir de leurs résultats. Chaque réponse montre les requêtes
+utilisées. Les requêtes SQL tournent dans une base DuckDB en mémoire, isolée (aucun accès aux fichiers
+ni au réseau). Code dans [`src/assistant/`](src/assistant/).
 
 ## Comment ça marche
 
@@ -41,7 +48,7 @@ Binance, Yahoo Finance, CoinGecko
 Chaque jour, **GitHub Actions** relance la collecte, la transformation et les tests, puis publie les
 données du dashboard. Si un test échoue, rien n'est publié et le dashboard garde les données de la veille.
 
-**Outils :** Python (pandas), SQL, DuckDB, dbt, Plotly, Streamlit, GitHub Actions.
+**Outils :** Python (pandas), SQL, DuckDB, dbt, Plotly, Streamlit, GitHub Actions, API Gemini (appel d'outils).
 
 ## Points notables
 
@@ -55,9 +62,10 @@ données du dashboard. Si un test échoue, rien n'est publié et le dashboard ga
 ## Organisation
 
 ```
-src/          collecte des données et calculs d'analyse
-transform/    modèles SQL et tests (dbt)
-notebooks/    analyses détaillées
-app/          dashboard Streamlit
-.github/      mise à jour quotidienne automatique
+src/             collecte des données et calculs d'analyse
+src/assistant/   assistant IA : outils et boucle de l'agent
+transform/       modèles SQL et tests (dbt)
+notebooks/       analyses détaillées
+app/             dashboard Streamlit
+.github/         mise à jour quotidienne automatique
 ```

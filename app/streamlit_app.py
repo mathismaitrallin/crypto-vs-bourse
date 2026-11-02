@@ -99,6 +99,7 @@ SECTIONS = {
     "risk": ("Risque et krachs", "Risk and crashes"),
     "simulator": ("Simulateur de portefeuille", "Portfolio simulator"),
     "trending": ("Cryptomonnaies tendance", "Trending cryptocurrencies"),
+    "assistant": ("Assistant IA", "AI assistant"),
 }
 # Streamlit recrée un sélecteur dont les libellés changent : la section ouverte est donc
 # mémorisée à part, pour rester la même quand on change de langue.
@@ -466,3 +467,11 @@ if section == "trending":
 
     st.caption(tr("Source : API publique CoinGecko. Ce n'est pas un conseil d'investissement.",
                   "Source: CoinGecko public API. This is not investment advice."))
+
+
+# --- Assistant IA -------------------------------------------------------------------
+
+if section == "assistant":
+    import assistant_ui  # import tardif : les autres sections n'ont pas besoin du SDK Gemini
+
+    assistant_ui.render()
