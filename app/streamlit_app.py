@@ -83,12 +83,6 @@ selecteur_langue(language_column)
 
 st.title(tr("La cryptomonnaie est-elle devenue un actif comme les autres ?",
             "Has cryptocurrency become an asset like any other?"))
-st.caption(tr(
-    f"Bitcoin, Ethereum et Solana face aux actions, obligations et or · "
-    f"données du {date(start)} au {date(end)}, mises à jour chaque jour",
-    f"Bitcoin, Ethereum and Solana versus stocks, bonds and gold · "
-    f"data from {date(start)} to {date(end)}, updated daily",
-))
 
 # Un sélecteur plutôt que des onglets : il garde la section ouverte quand un réglage
 # relance la page, et seule la section affichée est calculée. Les options sont des clés
