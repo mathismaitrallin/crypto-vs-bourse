@@ -56,6 +56,10 @@ Conventions :
   - simple_return et change_24h sont des fractions (0.05 = +5 %).
   - Volatilité annuelle = stddev(log_return) * sqrt(periods_per_year), sur fct_daily_returns.
   - Corrélation = corr(a.log_return, b.log_return) en joignant fct_aligned_returns sur la date.
+  - Performance sur une période = exp(sum(log_return)) - 1 sur fct_daily_returns : pour une année,
+    elle part de la clôture de l'année précédente (convention habituelle).
+  - Une requête qui ne renvoie rien vient souvent d'un filtre trop strict : vérifier le symbole et
+    les dates avant de conclure que la donnée n'existe pas.
 """
 
 TOOLS: List[Dict[str, Any]] = [
@@ -158,11 +162,11 @@ class ErreurOutil(Exception):
 
 def _json_value(v: Any) -> Any:
     """Valeur lisible et compacte pour le modèle : dates en texte, nombres arrondis."""
-    if v is None or (isinstance(v, float) and np.isnan(v)):
+    if v is None or (pd.api.types.is_scalar(v) and pd.isna(v)):   # None, NaN et dates vides (NaT)
         return None
     if isinstance(v, (pd.Timestamp, np.datetime64)) or hasattr(v, "isoformat"):
-        return pd.Timestamp(v).date().isoformat() if pd.Timestamp(v).time() == pd.Timestamp(0).time() \
-            else pd.Timestamp(v).isoformat()
+        ts = pd.Timestamp(v)
+        return ts.date().isoformat() if ts == ts.normalize() else ts.isoformat()
     if isinstance(v, (np.integer,)):
         return int(v)
     if isinstance(v, (float, np.floating)):
@@ -346,3 +350,5 @@ class Boite:
             return {"erreur": str(e)}
         except TypeError as e:
             return {"erreur": f"Paramètres invalides : {e}"}
+        except Exception as e:  # erreur imprévue : le modèle peut reformuler, l'app ne plante pas
+            return {"erreur": f"Erreur pendant le calcul : {type(e).__name__}: {e}"}

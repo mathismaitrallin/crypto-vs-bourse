@@ -36,6 +36,15 @@ graphique — puis rédige la réponse à partir de leurs résultats. Chaque ré
 utilisées. Les requêtes SQL tournent dans une base DuckDB en mémoire, isolée (aucun accès aux fichiers
 ni au réseau). Code dans [`src/assistant/`](src/assistant/).
 
+**Évaluation de l'assistant : 40 / 41.** 41 questions dont la bonne réponse est recalculée
+directement sur les données : 32 questions chiffrées (volatilité, performances, corrélations,
+krachs, simulations), plus des pièges (demandes de conseil, données absentes, hors sujet).
+Tous les chiffres sont justes ; la seule réponse non validée est correcte, mais formulée d'une
+façon que le barème automatique n'a pas reconnue. Les premiers passages (36 / 41) ont servi à
+corriger un vrai bug (une date vide faisait planter un outil) et une consigne trop faible (il
+répondait à une question hors sujet). Détail dans [`evals/resultats.md`](evals/resultats.md),
+relancer avec `python -m evals.run`.
+
 ## Comment ça marche
 
 ```
@@ -64,6 +73,7 @@ données du dashboard. Si un test échoue, rien n'est publié et le dashboard ga
 ```
 src/             collecte des données et calculs d'analyse
 src/assistant/   assistant IA : outils et boucle de l'agent
+evals/           évaluation de l'assistant (questions, score)
 transform/       modèles SQL et tests (dbt)
 notebooks/       analyses détaillées
 app/             dashboard Streamlit
